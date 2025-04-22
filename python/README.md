@@ -9,3 +9,8 @@ source ~/my_venv/bin/activate
 
 # Now install
 pip install -r requirements.txt
+
+
+# deactivate it 
+deactivate
+
