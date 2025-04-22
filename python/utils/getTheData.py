@@ -27,11 +27,11 @@
 #         dst_path = os.path.join(dest_dir, item)
         
 #         if os.path.exists(dst_path):
-#             print(f"⚠️ Skipping '{item}' (already exists in destination)")
+#             print(f"Skipping '{item}' (already exists in destination)")
 #             continue
             
 #         shutil.move(src_path, dst_path)
-#         print(f"✅ Moved: {item}")
+#         print(f" Moved: {item}")
 
 #     print("\n Dataset moved successfully!")
 # except Exception as e:
