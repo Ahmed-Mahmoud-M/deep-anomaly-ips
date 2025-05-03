@@ -1,8 +1,6 @@
-torch
 scikit-learn
 numpy
 pandas
 matplotlib
-seaborn
 tqdm
 jupyter
