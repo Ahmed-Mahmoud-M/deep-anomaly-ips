@@ -36,14 +36,23 @@ def loadData():
 
     return combined_df
     
-    # # Ensure processed folder exists before saving the file
-    # processed_folder = "/home/ahmed/deep-anomaly-ips/python/data/processed"
-    # os.makedirs(processed_folder, exist_ok=True)
-    
-    # # Save the combined DataFrame to the processed folder
-    # combined_df.to_csv(f"{processed_folder}/processed.csv", index=False)
 
-    # print("All files are combined in processed.csv")
+
+
+def countmissing(data):
+
+    miss_vals = data.isnull().sum()
+    for col, val in miss_vals.items():
+        if val!=0 :
+            print(f"column {col} has {val} missing values amounting to the {(val/len(data))*100 : .2f}% of total")
+    return 
+
+def countduplicate(data):
+    # duplicated rows 
+
+    duplicated_rows = df.duplicated().sum()
+    print(f" The number of the duplicated rows in the dataset is  {duplicate_count} amounting to the {(duplicate_count/len(data))*100 : .2f}% of total")
+    return
 
 if __name__ == '__main__':
     loadData()
