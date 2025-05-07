@@ -4,5 +4,7 @@ main.py
 main.cpp
 main
 /my_venv
+python/.ipynb_checkpoints/
+python/utils/.ipynb_checkpoints/
 
 

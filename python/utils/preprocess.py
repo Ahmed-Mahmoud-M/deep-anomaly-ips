@@ -54,5 +54,42 @@ def countduplicate(data):
     print(f" The number of the duplicated rows in the dataset is  {duplicate_count} amounting to the {(duplicate_count/len(data))*100 : .2f}% of total")
     return
 
+
+
+
+
+def duplicate_columns(df):
+    identical_cols = {}
+    visitied = set()
+
+    for i in range(len(df.columns)):
+        col_1 = df.columns[i]
+
+        for j in range(i+1,len(df.columns)):
+            col_2 = df.columns[j]
+
+            if col_2 not in visitied and df[col_1].equals(df[col_2]):
+                if col_1 not in identical_cols:
+                    identical_cols[col_1] = [col2]
+                else:
+                    identical_cols[col_1].append(col_2)
+                visitied.add(col_2)
+    return identical_cols
+
+
+def drop_duplicate_columns(df,identical_cols):
+    col_to_drop = []
+
+    for duplicates in identical_cols.values():
+        col_to_drop.extend(duplicates)
+    
+
+    df.drop(columns=col_to_drop,inplace=True)
+
+
+    return df
+
+
+
 if __name__ == '__main__':
     loadData()
