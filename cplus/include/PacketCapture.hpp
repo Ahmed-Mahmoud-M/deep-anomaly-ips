@@ -2,10 +2,12 @@
 #include <atomic>
 #include <bits/types/struct_timeval.h>
 #include <mutex>
+#include <pcap/pcap.h>
 #include <queue>
 #include<string>
 #include<pcap.h>
 #include <sys/types.h>
+#include <unordered_map>
 #include <vector>
 
 
@@ -28,7 +30,8 @@ class PacketCapture {
         void stopCapture();
 
         // set BPF filiter 
-	    void setFilter(const std::string& filter);
+        void precompileFilters(); 
+	    bool setFilter(const std::string& filter);
 
 
         // Fetech a batch of packets 
@@ -38,11 +41,12 @@ class PacketCapture {
 
 
     private:
-        pcap_t *sniffingSession;
+        pcap_t *session_handler;
         std::string interface;
         std::atomic<bool> isRunnig;
         std::queue<Packet> packetQueue;
         std::mutex queueMutex;
+        std::unordered_map<std::string ,  bpf_program >precompiledFiliter; // caching compiled Filiters
         static void packetHandler(u_char* userData, const struct pcap_pkthdr* pkthdr, const u_char* PacketData);
 
 
