@@ -1,0 +1,3 @@
+/home/kali/Desktop/ips_gui/build/CMakeFiles/IPS_GUI.dir
+/home/kali/Desktop/ips_gui/build/CMakeFiles/edit_cache.dir
+/home/kali/Desktop/ips_gui/build/CMakeFiles/rebuild_cache.dir

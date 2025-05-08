@@ -1,0 +1,22 @@
+  
+  sudo apt update
+  
+sudo apt install qtbase5-dev qt5-qmake qttools5-dev-tools build-essential cmake -y
+
+  
+   cd ~/Desktop
+
+   mkdir -p ips_gui/build
+
+     cd ips_gui
+     
+       cd build
+       
+       cmake ..
+       
+       make
+       
+       ./IPS_GUI
+       
+       
+
