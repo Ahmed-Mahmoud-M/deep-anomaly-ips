@@ -5,3 +5,5 @@ matplotlib
 tqdm
 jupyter
 notebook
+seaborn
+scipy
