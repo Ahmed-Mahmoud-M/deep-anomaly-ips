@@ -1,0 +1,5 @@
+/home/kali/Desktop/ips_gui_Backup/build/CMakeFiles/IPS_GUI.dir
+/home/kali/Desktop/ips_gui_Backup/build/CMakeFiles/edit_cache.dir
+/home/kali/Desktop/ips_gui_Backup/build/CMakeFiles/rebuild_cache.dir
+/home/kali/Desktop/ips_gui_Backup/build/CMakeFiles/IPS_GUI_autogen_timestamp_deps.dir
+/home/kali/Desktop/ips_gui_Backup/build/CMakeFiles/IPS_GUI_autogen.dir
