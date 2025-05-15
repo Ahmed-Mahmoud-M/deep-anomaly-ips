@@ -7,3 +7,4 @@ jupyter
 notebook
 seaborn
 scipy
+lightgbm
