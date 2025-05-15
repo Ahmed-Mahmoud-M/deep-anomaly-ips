@@ -1,4 +1,4 @@
-#include "../include/PacketCapture.hpp"
+#include "../../include/sniffing/PacketCapture.hpp"
 #include<iostream>
 #include <pcap/pcap.h>
 #include<stdexcept>
