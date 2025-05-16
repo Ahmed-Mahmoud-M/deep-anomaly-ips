@@ -1,112 +1,158 @@
 #include "../../include/sniffing/PacketCapture.hpp"
-#include<iostream>
+#include <cstdint>
+#include <cstdio>
 #include <pcap/pcap.h>
-#include<stdexcept>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 
 
-PacketCapture::PacketCapture(const std::string& interface) : interface(interface) {
-    char errbuf[PCAP_ERRBUF_SIZE];
-    /*c_str() convert std::string to char* string */
+
+PacketCapture::PacketCapture() :pcap_handle(nullptr),timeout_ms(1000),promiscuous(true),capturing(false),packets_dropped(0),packets_captured(0){}
 
 
-    /*pcap_t *pcap_open_live(char *device, int snaplen, int promisc, int to_ms,
-    char *ebuf) 
-    
-    snaplen --> maximum # of bytes to be captured by pcap   
-    promisc --> set to true bring the interface into promiscuous mode
-    to_ms --> is the read time in millieseconds 
-    ebuf --> store any error messages within the session 
-    
-    */
-    session_handler = pcap_open_live(interface.c_str(), BUFSIZ, 1, 1000, errbuf);
-
-    if (!session_handler) throw std::runtime_error("failed to open device: "+std::string(errbuf));
-//     if (pcap_datalink(session_handler) != DLT_EN10MB) {
-// 	fprintf(stderr, "Device %s doesn't provide Ethernet headers - not supported\n", interface.c_str());
-
-// }
-
-    std::cout << "sucessfully open the interface" ;
-
-
-    // start capturing press ctr-c to stop 
-     pcap_loop(session_handler,0,packetHandler,nullptr); // 0 for infinite packets
-     pcap_close(session_handler);
-    
-    
+PacketCapture::~PacketCapture(){
+    start_capture();
+    cleanup_pcap();
 }
 
 
-PacketCapture::~PacketCapture() {
-    if (session_handler) pcap_close(session_handler);
+bool PacketCapture::set_interface(const std::string&interface) {
+    if(capturing) return false;
+    current_interface = interface;
+    return true;
 }
 
 
-                    
-void PacketCapture::packetHandler(unsigned char *userData,const struct pcap_pkthdr *pkthdr,const unsigned char *packet){
-    std::cout << "captured a packet (" << pkthdr->len << " bytes) " << std::endl;
+bool PacketCapture::set_filiter(const std::string& filiter_expression) {
+    if (capturing) return false;
+    current_filiter = filiter_expression;
+
+    return true;
 }
 
 
+bool PacketCapture::set_timeout(int timeout_ms) {
+    if(capturing) return false;
+    this->timeout_ms = timeout_ms;
+    return true;
+}
 
-/*
-    prototype of pcap_compile() :
-        int pcap_compile(pcap_t * handler, struct bpf_program *fp , char * str , int optimize , bpf_uint32 netmask)
+bool PacketCapture::set_promiscuous(bool enable) {
+    if (capturing) return false;
 
-        0 with no error 
+    promiscuous = enable;
 
-
-    prototype of pcap_setFIliter()
-        pcap_setfiliter(pcap_t * handler , struct bpf_program *fp)
-
-    
-    struct bpf_program *fp --> compiled version of  a specific string 
-
-    steps of set the filiter : 
-        1 recieve the experession string
-        2 compiled it that pcap can understand
-        3 apply to the handler pcap 
+    return true;
+}
 
 
+bool PacketCapture::start_capture(){
+    if (capturing || current_interface.empty()) return false;
+
+    if (!pcap_handle) init_pcap();
+
+    capturing = true;
+    return true;
+}
+
+
+void PacketCapture::stop_capture(){
+    capturing = false;
+}
+
+
+bool PacketCapture::is_capturing(){
+    return capturing;
+}
+
+
+void PacketCapture::process_next_packet(){
+    if (!capturing || !pcap_handle) return;
+
+
+    pcap_pkthdr * header;
+    const u_char * packet;
+
+    int result = pcap_next_ex(pcap_handle, &header, &packet);
+
+    if (result == 1){
+        current_packet.assign(packet,packet+header->caplen);
+        packets_captured ++;
+    }else if (result == 0) {
+            // continue
+    }else{
+        packets_dropped ++;
+    }
 
 
 
-*/
+}
+
+bool PacketCapture::has_packets() {
+    return ! current_packet.empty();
+}
+
+const std::vector<uint8_t>& PacketCapture::get_current_packet(){
+    return  current_packet;
+}
 
 
-void PacketCapture::precompileFilters(){
-    const std::vector<std::string> defualtFiliters {
-        "tcp port 80",    // HTTP
-            "tcp port 22",    // SSH
-            "udp port 53",    // DNS
-            "icmp",           // Ping
-            "net 192.168.1.0/24"  // Internal traffic
-    };
+uint32_t PacketCapture::get_packets_captured() {
+    return packets_captured;
+}
 
-    for (const auto& filiter : defualtFiliters) {
-        bpf_program pragma;
-        if(pcap_compile(session_handler, &pragma, filiter.c_str(), 1,PCAP_NETMASK_UNKNOWN)==0) {
-            precompiledFiliter[filiter] = pragma;
-        }
+
+uint32_t PacketCapture::get_packets_dropped(){
+    return packets_dropped;
+}
+
+        
+void PacketCapture::cleanup_pcap(){
+    if (pcap_handle) {
+        pcap_close(pcap_handle);
+        pcap_handle = nullptr;
     }
 }
 
-bool PacketCapture::setFilter(const std::string& filter){
-        if(precompiledFiliter.find(filter)!=precompiledFiliter.end()) {
-            return pcap_setfilter(session_handler, &precompiledFiliter[filter])==0;
-        }else{
 
-            bpf_program pragma;
-        if(pcap_compile(session_handler, &pragma, filter.c_str(), 1,PCAP_NETMASK_UNKNOWN)==0) {
-            bool success = pcap_setfilter(session_handler, &pragma)==0;
-            pcap_freecode(&pragma);
-            return success;
-        }
+void PacketCapture::init_pcap(){
+    char errbuf [PCAP_ERRBUF_SIZE];
+
+    pcap_handle = pcap_open_live(
+        current_interface.c_str(),
+        BUFSIZ,
+        promiscuous,
+        timeout_ms,
+        errbuf   
+    );
+
+    if (!pcap_handle) {
+        throw std::runtime_error("Failed to open interface: " + std::string(errbuf));
+    }
+
+
+
+    // set filiter 
+
+    if (!current_filiter.empty()) {
+        struct bpf_program fp;
+
+        if (pcap_compile(pcap_handle, &fp, current_filiter.c_str(), 0, PCAP_NETMASK_UNKNOWN)==-1){
+                cleanup_pcap();
+            throw std::runtime_error("Failed to compile filter: " + std::string(pcap_geterr(pcap_handle)));
+
         }
 
-        return false;
+
+        if (pcap_setfilter(pcap_handle, &fp)== -1){
+            pcap_freecode(&fp);
+            cleanup_pcap();
+            throw std::runtime_error("Failed to set filter: " + std::string(pcap_geterr(pcap_handle)));
+        }
+
+        pcap_freecode(&fp);
+    }
 }
 

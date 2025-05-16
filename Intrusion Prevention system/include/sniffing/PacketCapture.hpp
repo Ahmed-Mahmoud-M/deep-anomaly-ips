@@ -1,61 +1,89 @@
-#pragma once
-#include <atomic>
-#include <bits/types/struct_timeval.h>
-#include <mutex>
+#pragma  once 
+
+
+/*
+
+PacketCapture class 
+
+purpose : Core class for capturing network packets
+Responsibilities:
+        1) initalize network interface
+        2)set filiter (BPF filiter)
+        3) start , stop sniffing
+        4)Handle capture packets
+*/
+
+#include <cstdint>
 #include <pcap/pcap.h>
-#include <queue>
-#include<string>
-#include<pcap.h>
+#include <string>
 #include <sys/types.h>
-#include <unordered_map>
 #include <vector>
-
-
-struct Packet {
-
-    std::vector<uint8_t> data; //Raw data bytes
-    struct timeval timestamp;//Packet arrival time 
-};
-
 class PacketCapture {
+
     public:
-        PacketCapture(const std::string& interface);
+        // constructor and destructor 
+        PacketCapture();
         ~PacketCapture();
 
-	
-    	void startCapture(int packetCount = -1);// by defualt -1 infinite
-        // start capturing in a background thread
-        void startBackgroundCapture();
-        // stop background capture
-        void stopCapture();
 
-        // set BPF filiter 
-        void precompileFilters(); 
-	    bool setFilter(const std::string& filter);
+        // configuration 
+
+        bool set_interface(const std::string & interface);
+        bool set_filiter(const std::string& filiter_expression);
+        bool set_timeout(int timeout_ms);
+        bool set_promiscuous(bool enable);
 
 
-        // Fetech a batch of packets 
+        // capture control 
 
-        std::vector<Packet> getPacketBatch();
+        bool start_capture();
+        void stop_capture();
+        bool is_capturing();
+
+
+
+        // packet processing 
+
+
+        void process_next_packet();
+        bool has_packets();
+        const std::vector<uint8_t> & get_current_packet();
+
+
+
+        uint32_t get_packets_captured();
+        uint32_t get_packets_dropped();
 
 
 
     private:
-        pcap_t *session_handler;
-        std::string interface;
-        std::atomic<bool> isRunnig;
-        std::queue<Packet> packetQueue;
-        std::mutex queueMutex;
-        std::unordered_map<std::string ,  bpf_program >precompiledFiliter; // caching compiled Filiters
-        static void packetHandler(u_char* userData, const struct pcap_pkthdr* pkthdr, const u_char* PacketData);
+        // internal processing
+
+        void init_pcap();
+        void cleanup_pcap();
+
+        static void packet_handler(
+            u_char * user_data,
+            const struct pcap_pkthdr * pkthdr,
+            const u_char * packet
+        );
+
+    
+    pcap_t * pcap_handle;
+    std::string current_interface;
+    std::string current_filiter;
+    int timeout_ms;
+    bool promiscuous;
+    bool capturing;
+
+    // packet storage
+    std::vector<uint8_t> current_packet;
+    uint32_t packets_captured;
+    uint32_t packets_dropped;
 
 
-        // internal packet processing 
-        void processPacket(const struct pcap_pkthdr* pkthdr,const u_char *PacketData);
-        
 
-
-		
 
 };
+
 
