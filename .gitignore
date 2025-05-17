@@ -1,4 +1,4 @@
-python/data/raw
+python/data/raw/
 python/data/processed/.ipynb_checkpoints/
 python/my_venv
 main.py
