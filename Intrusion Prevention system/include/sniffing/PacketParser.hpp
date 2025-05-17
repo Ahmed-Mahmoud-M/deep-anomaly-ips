@@ -38,6 +38,11 @@ struct NetworkPacket {
     std::vector<uint8_t>payload;
     uint16_t payload_size;
 
+    void print_summary();
+
+
+    
+
 };
 
 
@@ -65,7 +70,7 @@ class PacketParser{
         static std::string mac_to_string(const uint8_t mac[6]);
         static uint16_t ntohs(uint16_t net_short);
         static uint32_t ntohl(uint32_t net_long);
-    private:
+
 
     static const uint16_t ETHERTYPE_IP = 0x0800;
     static const uint16_t ETHERTYPE_IPV6 = 0x86DD;

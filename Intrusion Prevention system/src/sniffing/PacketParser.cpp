@@ -7,7 +7,6 @@
 #include <arpa/inet.h>
 #include <cstring>
 
-
 PacketParser::PacketParser() : parse_errors(0){}
 
 
