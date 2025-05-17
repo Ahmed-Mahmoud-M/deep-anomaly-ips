@@ -2,7 +2,6 @@
 
 
 
-
 /*
 
 purpose of that class to --> track networks flow like sequences of packets between two endpoints
@@ -57,8 +56,12 @@ class FlowTracker{
             // basic count for total packets and thier bytes
             uint32_t total_packets = 0;
             uint64_t total_bytes = 0;
-
-
+            
+            
+            // Packet size stats
+            uint32_t min_pkt_size = UINT32_MAX;
+            uint32_t max_pkt_size = 0;
+            uint64_t total_pkt_sizes = 0;
 
             // TCp-specific
 
@@ -85,7 +88,7 @@ class FlowTracker{
             uint32_t fwd_packets = 0;// Counts the number of packets sent from the source to the destination.
 
 
-            uint32_t pwd_packets  = 0; // Counts the number of packets sent from the destination to the source.
+            uint32_t bwd_packets  = 0; // Counts the number of packets sent from the destination to the source.
         };
 
 
@@ -122,7 +125,7 @@ class FlowTracker{
 
         const std::unordered_map<FlowKey, FlowStatistics,FlowKeyHash>& get_active_flows()const;
 
-        std::vector<FlowKey> get_completed_flows()const;
+       const std::vector<FlowTracker::FlowKey>& get_completed_flows()const;
 
 
 
@@ -134,7 +137,7 @@ class FlowTracker{
 
 
 
-    private:
+    
         std::chrono::seconds active_timeout;
         std::chrono::seconds inactive_timeout;
         
@@ -153,3 +156,7 @@ class FlowTracker{
         // Move a flow from active to completed.
         void finalize_flow(const FlowKey & key);
 };
+
+
+
+
