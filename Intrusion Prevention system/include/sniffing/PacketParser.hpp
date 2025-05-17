@@ -20,7 +20,7 @@ struct NetworkPacket {
     uint8_t ip_protocol;
     uint32_t src_ip;
     uint32_t dst_ip;
-    uint16_t ip_length;
+    uint32_t ip_length;
     uint8_t ttl;
 
 
