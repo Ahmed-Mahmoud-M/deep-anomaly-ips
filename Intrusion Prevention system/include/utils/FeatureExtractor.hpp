@@ -6,6 +6,7 @@
 #include "../sniffing/FlowTracker.hpp"
 #include <cstdint>
 #include <vector>
+#include <array>
 class FeatureExtractor{
 
 
@@ -139,8 +140,47 @@ class FeatureExtractor{
 
     std::vector<float>to_vector(const Features& features) const;
 
-    private:
+   private:
+    // PCA Weight Matrices (from your sklearn output)
+    static constexpr std::array<std::array<float,4>,1> PCA_ACTIVE_WEIGHTS = {{
+        {0.476217f, 0.208681f, 0.784759f, 0.337377f}  // Active Profile
+    }};
+
+    static constexpr std::array<std::array<float,3>,1> PCA_FWD_PKT_WEIGHTS = {{
+        {0.912097f, 0.213190f, 0.350184f}  // Fwd Packet Length Profile
+    }};
+
+    static constexpr std::array<std::array<float,4>,1> PCA_TOTAL_PKTS_WEIGHTS = {{
+        {0.707112f, 0.707102f, 0.000234f, 0.000310f}  // Total Packets Profile
+    }};
+
+    static constexpr std::array<std::array<float,2>,1> PCA_IDLE_MEANMAX_WEIGHTS = {{
+        {0.696139f, 0.717907f}  // Idle Mean+Max Profile
+    }};
+
+    static constexpr std::array<std::array<float,2>,1> PCA_FWD_IDLE_WEIGHTS = {{
+        {0.583926f, 0.811807f}  // Fwd Flow + Idle Profile
+    }};
+
+    static constexpr std::array<std::array<float,2>,1> PCA_SEG_PKT_WEIGHTS = {{
+        {0.707107f, 0.707107f}  // Segment + Packet Profile
+    }};
+
+    static constexpr std::array<std::array<float,3>,1> PCA_IDLE_FULL_WEIGHTS = {{
+        {0.577139f, 0.589575f, 0.565078f}  // Full Idle Profile
+    }};
     
+
+    // Helper methods
+    template<size_t N>
+    float apply_pca(const std::array<float,N>& values, 
+                  const std::array<std::array<float,N>,1>& weights) const {
+        float result = 0.0f;
+        for(size_t i = 0; i < N; ++i) {
+            result += values[i] * weights[0][i];
+        }
+        return result;
+    }
 
 
 };
