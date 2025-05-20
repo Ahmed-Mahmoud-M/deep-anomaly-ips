@@ -11,3 +11,6 @@ ips_gui/
 draftcode/
 sniffer
 
+python/notebooks/.ipynb_checkpoints
+.ipynb_checkpoints/
+
