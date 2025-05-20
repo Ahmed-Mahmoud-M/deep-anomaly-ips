@@ -8,7 +8,7 @@
 #include <vector>
 #include <array>
 class FeatureExtractor{
-
+public:
 
     struct Features{
         /*Basic features*/
@@ -140,7 +140,7 @@ class FeatureExtractor{
 
     std::vector<float>to_vector(const Features& features) const;
 
-   private:
+  
     // PCA Weight Matrices (from your sklearn output)
     static constexpr std::array<std::array<float,4>,1> PCA_ACTIVE_WEIGHTS = {{
         {0.476217f, 0.208681f, 0.784759f, 0.337377f}  // Active Profile
@@ -170,17 +170,15 @@ class FeatureExtractor{
         {0.577139f, 0.589575f, 0.565078f}  // Full Idle Profile
     }};
     
-
-    // Helper methods
-    template<size_t N>
-    float apply_pca(const std::array<float,N>& values, 
-                  const std::array<std::array<float,N>,1>& weights) const {
-        float result = 0.0f;
-        for(size_t i = 0; i < N; ++i) {
-            result += values[i] * weights[0][i];
-        }
-        return result;
+template<size_t N>
+float apply_pca(const std::array<float,N>& values, 
+               const std::array<std::array<float,N>,1>& weights) const {
+    float result = 0.0f;
+    for(size_t i = 0; i < N; ++i) {
+        result += values[i] * weights[0][i];
     }
+    return result;
+}
 
 
 };
