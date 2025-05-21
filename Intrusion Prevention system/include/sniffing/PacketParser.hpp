@@ -36,7 +36,13 @@ struct NetworkPacket {
     // payload 
 
     std::vector<uint8_t>payload;
-    uint16_t payload_size;
+    uint32_t payload_size;
+
+    
+    uint16_t ip_header_length;  // IP header length in bytes
+    uint16_t tcp_header_length; // TCP header length in bytes (if TCP)
+    uint16_t udp_header_length; // UDP header length (always 8 if UDP)
+    uint16_t tcp_window;
 
     void print_summary();
 

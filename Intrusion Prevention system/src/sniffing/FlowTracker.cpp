@@ -5,7 +5,6 @@
 #include <functional>
 #include <unordered_map>
 
-
 // flow equailty operator
 bool FlowTracker::FlowKey::operator==(const FlowKey& other) const {
 
@@ -46,15 +45,13 @@ This function gets called by process_packet(...) every time a packet arrives, to
 
 
 
-void FlowTracker::update_flow_statistics(FlowStatistics &stats,const NetworkPacket & packet) {
-    // packet size stats
-
+void FlowTracker::update_flow_statistics(const FlowKey& key, FlowStatistics& stats, const NetworkPacket& packet) {
     // Packet size stats
     stats.min_pkt_size = std::min(stats.min_pkt_size, packet.ip_length);
     stats.max_pkt_size = std::max(stats.max_pkt_size, packet.ip_length);
     stats.total_pkt_sizes += packet.ip_length;
+    stats.pkt_len_sq_sum += packet.ip_length * packet.ip_length;
 
-    
     // TCP flag counts
     if (packet.ip_protocol == PacketParser::IP_PROTOCOL_TCP) {
         if (packet.tcp_flags & 0x02) stats.syn_count++;
@@ -64,8 +61,67 @@ void FlowTracker::update_flow_statistics(FlowStatistics &stats,const NetworkPack
         if (packet.tcp_flags & 0x10) stats.ack_count++;
     }
 
-    // Inter-arrival time (CICIDS2017 feature)
     auto now = std::chrono::system_clock::now();
+    bool is_forward = (packet.src_ip == key.src_ip);
+
+    // Update direction-specific statistics
+    if (is_forward) {
+        stats.fwd_packets++;
+        stats.fwd_pkt_len_total += packet.ip_length;
+        stats.fwd_pkt_len_sq_sum += packet.ip_length * packet.ip_length;
+        stats.total_fwd_header_len += packet.ip_header_length;
+
+        if (packet.ip_protocol == PacketParser::IP_PROTOCOL_TCP) {
+            stats.fwd_seg_size_total += packet.payload_size;
+            stats.fwd_win_bytes_total += packet.tcp_window;
+            if (packet.payload_size > 0) {
+                stats.act_data_pkt_fwd++;
+                stats.min_seg_size_fwd = std::min(stats.min_seg_size_fwd, packet.payload_size);
+            }
+            if (stats.fwd_packets == 1) {
+                stats.init_win_fwd = packet.tcp_window;
+            }
+        }
+
+        // Forward IAT calculations
+        if (stats.fwd_packets > 1) {
+            double fwd_iat = std::chrono::duration<double>(now - stats.last_fwd_time).count();
+            stats.fwd_total_iat += fwd_iat;
+            stats.fwd_iat_sq_sum += fwd_iat * fwd_iat;
+            if (fwd_iat > stats.fwd_max_iat) stats.fwd_max_iat = fwd_iat;
+            if (stats.fwd_packets == 2 || fwd_iat < stats.fwd_min_iat) {
+                stats.fwd_min_iat = fwd_iat;
+            }
+        }
+        stats.last_fwd_time = now;
+    } else {
+        stats.bwd_packets++;
+        stats.bwd_pkt_len_total += packet.ip_length;
+        stats.bwd_pkt_len_sq_sum += packet.ip_length * packet.ip_length;
+        stats.total_bwd_header_len += packet.ip_header_length;
+
+        if (packet.ip_protocol == PacketParser::IP_PROTOCOL_TCP) {
+            stats.bwd_seg_size_total += packet.payload_size;
+            stats.bwd_win_bytes_total += packet.tcp_window;
+            if (stats.bwd_packets == 1) {
+                stats.init_win_bwd = packet.tcp_window;
+            }
+        }
+
+        // Backward IAT calculations
+        if (stats.bwd_packets > 1) {
+            double bwd_iat = std::chrono::duration<double>(now - stats.last_bwd_time).count();
+            stats.bwd_total_iat += bwd_iat;
+            stats.bwd_iat_sq_sum += bwd_iat * bwd_iat;
+            if (bwd_iat > stats.bwd_max_iat) stats.bwd_max_iat = bwd_iat;
+            if (stats.bwd_packets == 2 || bwd_iat < stats.bwd_min_iat) {
+                stats.bwd_min_iat = bwd_iat;
+            }
+        }
+        stats.last_bwd_time = now;
+    }
+
+    // Flow-level IAT calculations
     if (stats.total_packets > 0) {
         double iat = std::chrono::duration<double>(now - stats.last_packet_time).count();
         if (stats.min_iat < 0 || iat < stats.min_iat) stats.min_iat = iat;
@@ -73,10 +129,9 @@ void FlowTracker::update_flow_statistics(FlowStatistics &stats,const NetworkPack
         stats.total_iat += iat;
     }
 
-
-    
-
-  
+    stats.last_packet_time = now;
+    stats.total_packets++;
+    stats.total_bytes += packet.ip_length;
 }
 
 
@@ -139,20 +194,9 @@ void FlowTracker::process_packet(const NetworkPacket& packet) {
     if (flow.total_packets == 0) {
         flow.start_time = now;
     }
-    flow.last_packet_time = now;
 
-    // Update statistics
-    update_flow_statistics(flow, packet);
-    flow.total_packets++;
-    flow.total_bytes += packet.ip_length;
-
-    // Check flow direction (CICIDS2017 feature)
-    bool is_forward = (packet.src_ip == key.src_ip);
-    if (is_forward) {
-        flow.fwd_packets++;
-    } else {
-        flow.bwd_packets++;
-    }
+    
+    update_flow_statistics(key, flow, packet);
 }
 
 

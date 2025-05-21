@@ -68,7 +68,7 @@ bool PacketParser::parse_ip(const uint8_t* data, uint32_t size, NetworkPacket& r
     result.ip_protocol = data[9];
     result.ip_length = ntohs(*(uint16_t*)(data + 2));
     result.ttl = data[8];
-    
+    result.ip_header_length = (data[0] & 0x0F) * 4;
     result.src_ip = *(uint32_t*)(data + 12);
     result.dst_ip = *(uint32_t*)(data + 16);
     
@@ -92,12 +92,14 @@ bool PacketParser::parse_ip(const uint8_t* data, uint32_t size, NetworkPacket& r
 bool PacketParser::parse_tcp(const uint8_t* data, uint32_t size, NetworkPacket& result) {
     if (size < 20) return false;
     
+    result.tcp_window = ntohs(*(uint16_t*)(data + 14));
+
     result.src_port = ntohs(*(uint16_t*)(data));
     result.dst_port = ntohs(*(uint16_t*)(data + 2));
     result.seq_num = ntohl(*(uint32_t*)(data + 4));
     result.ack_num = ntohl(*(uint32_t*)(data + 8));
     result.tcp_flags = data[13];
-    
+    result.tcp_header_length = (data[12] >> 4) * 4;
     // Get payload
     uint8_t data_offset = (data[12] >> 4) * 4;
     if (size <= data_offset) return false;
@@ -115,7 +117,7 @@ bool PacketParser::parse_udp(const uint8_t* data, uint32_t size, NetworkPacket& 
     
     result.src_port = ntohs(*(uint16_t*)(data));
     result.dst_port = ntohs(*(uint16_t*)(data + 2));
-    
+    result.udp_header_length = 8;
     // Get payload
     result.payload_size = ntohs(*(uint16_t*)(data + 4)) - 8;
     if (result.payload_size > 0 && size >= 8 + result.payload_size) {

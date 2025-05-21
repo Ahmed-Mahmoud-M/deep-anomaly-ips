@@ -9,7 +9,7 @@
 #include <array>
 class FeatureExtractor{
 
-
+    public:
     struct Features{
         /*Basic features*/
 
@@ -27,6 +27,7 @@ class FeatureExtractor{
         int64_t bwd_pkt_length_min; // Bwd Packet Length Min
         float bwd_pkt_len_mean;    // Bwd Packet Length Mean
         float bwd_pkt_len_std;      // Bwd Packet Length Std
+        float fwd_pkt_len_mean;
 
 
         // FLow tioming
@@ -36,6 +37,12 @@ class FeatureExtractor{
         float flow_iat_mean; // Flow IAT Mean
         float flow_iat_std;  // Flow IAT Std
         int64_t flow_iat_min; // Flow IAT Min
+        double fwd_pkt_len_std;
+        double avg_fwd_seg_size ;
+        double flow_iat_max;
+        double fwd_iat_max;
+        double bwd_iat_std;
+        double bwd_iat_min;
 
 
 
@@ -136,9 +143,9 @@ class FeatureExtractor{
     };
 
 
-    Features extract(const FlowTracker::FlowKey&key, const FlowTracker::FlowStatistics &stats);
-
-    std::vector<float>to_vector(const Features& features) const;
+    Features extract(const FlowTracker::FlowKey& key, const FlowTracker::FlowStatistics &stats) const;
+    
+    std::vector<float> to_vector(const Features& features) const;
 
    private:
     // PCA Weight Matrices (from your sklearn output)

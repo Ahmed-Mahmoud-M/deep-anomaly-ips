@@ -90,6 +90,45 @@ class FlowTracker{
 
             uint32_t bwd_packets  = 0; // Counts the number of packets sent from the destination to the source.
 
+            double fwd_total_iat = 0.0;      // Total forward IAT
+            double bwd_total_iat = 0.0;      // Total backward IAT
+            double fwd_iat_sq_sum = 0.0;     // Sum of squares for forward IAT
+            double bwd_iat_sq_sum = 0.0;     // Sum of squares for backward IAT
+            double fwd_max_iat = 0.0;        // Max forward IAT
+            double bwd_max_iat = 0.0;        // Max backward IAT
+            
+            // For packet length variance
+            uint64_t pkt_len_sq_sum = 0;     // Sum of squares of packet lengths
+            
+            // For header lengths
+            uint32_t total_fwd_header_len = 0;
+            uint32_t total_bwd_header_len = 0;
+            
+            // For TCP window sizes
+            uint32_t init_win_fwd = 0;
+            uint32_t init_win_bwd = 0;
+            uint32_t min_seg_size_fwd = 0;
+            
+            // Timestamps for idle time calculation
+            std::chrono::system_clock::time_point last_fwd_time;
+            std::chrono::system_clock::time_point last_bwd_time;
+
+            uint64_t fwd_pkt_len_total = 0;
+            uint64_t bwd_pkt_len_total = 0;
+            uint64_t fwd_pkt_len_sq_sum = 0;
+            uint64_t bwd_pkt_len_sq_sum = 0;
+            uint32_t fwd_seg_size_total = 0;
+            uint32_t bwd_seg_size_total = 0;
+            uint32_t fwd_win_bytes_total = 0;
+            uint32_t bwd_win_bytes_total = 0;
+            double fwd_iat_total = 0;
+            double bwd_iat_total = 0;
+            double fwd_min_iat = 0;
+            double bwd_min_iat = 0;
+            
+            uint32_t act_data_pkt_fwd = 0;
+            
+
 
             
         };
@@ -155,9 +194,15 @@ class FlowTracker{
             //  Check timeout conditions.
         bool is_flow_expired(const FlowKey &key,const FlowStatistics & state)const;
             // Update stats for a flow when a packet arrives
-        void update_flow_statistics(FlowStatistics & stats,const NetworkPacket & packet);
+        void update_flow_statistics(const FlowKey& key, FlowStatistics & stats, const NetworkPacket & packet);
         // Move a flow from active to completed.
         void finalize_flow(const FlowKey & key);
+
+ 
+
+        
+        std::unordered_map<FlowKey, FlowStatistics, FlowKeyHash>& 
+        get_active_flows() { return active_flows; }
 };
 
 
