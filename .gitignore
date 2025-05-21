@@ -13,5 +13,6 @@ sniffer
 python/notebooks/split_data
 python/notebooks/.ipynb_checkpoints
 .ipynb_checkpoints/
-
+network_features.csv
+packet_log.csv
 python/data/processed/processed_data.csv
