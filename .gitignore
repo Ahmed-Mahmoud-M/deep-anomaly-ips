@@ -16,3 +16,5 @@ python/notebooks/.ipynb_checkpoints
 network_features.csv
 packet_log.csv
 python/data/processed/processed_data.csv
+.vscode/
+packages.microsoft.gpg

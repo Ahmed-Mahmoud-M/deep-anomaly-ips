@@ -8,3 +8,5 @@ notebook
 seaborn
 scipy
 lightgbm
+torch
+torchvision
