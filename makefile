@@ -1,10 +1,10 @@
 run:
-	g++ main.cpp -o main  -lpcap
+	g++ main.cpp -o main  -lpcap 
 	./main
 
 
 
 
 test:
-	g++ draftcode/*.cpp -o sniffer -lpcap
+	g++ draftcode/*.cpp -o sniffer -lpcap -lzmq
 	./sniffer

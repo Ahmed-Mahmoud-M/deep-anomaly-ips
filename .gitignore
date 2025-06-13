@@ -1,7 +1,10 @@
 python/data/raw/
-python/data/processed/.ipynb_checkpoints/
+python/data/processed/.ipynb_checkpoints/detection_log.txt
+detection_log.txt
+ids.log
+python/notebooks/hybrid_lstm_cnn_model.pth
 python/my_venv
-main.py
+
 
 main
 /my_venv
