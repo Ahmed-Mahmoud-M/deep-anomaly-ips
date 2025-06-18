@@ -72,7 +72,7 @@ This project implements a modular and efficient IPS pipeline to detect anomalous
 
 ```bash
 # Compile the C++ packet capture tool
-g++ -std=c++17 -o capture capture.cpp -lpcap
+sudo make run
 
 # Start the Python model server
 python3 model_server.py
