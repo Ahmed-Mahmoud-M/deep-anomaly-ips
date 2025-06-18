@@ -1,8 +1,8 @@
-# 🔐 Deep Anomaly IPS
+#  Deep Anomaly IPS
 
 A hybrid **C++/Python Intrusion Prevention System (IPS)** that leverages real-time packet capturing, deep learning-based anomaly detection, and alert generation. This architecture combines high-performance packet processing with advanced temporal-spatial feature learning using **CNN-LSTM** deep learning models.
 
-> 📈 Achieved a detection accuracy of **98.35%** on the **CIC-IDS 2017** dataset, significantly improving upon the previous best model accuracy of **97.25%** referenced in a major IDS survey paper.
+>  Achieved a detection accuracy of **98.35%** on the **CIC-IDS 2017** dataset, significantly improving upon the previous best model accuracy of **97.25%** referenced in a major IDS survey paper.
 
 ---
 
