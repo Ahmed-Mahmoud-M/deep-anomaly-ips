@@ -77,6 +77,5 @@ sudo make run
 # Start the Python model server
 python3 model_server.py
 
-# Run the packet capture tool (requires root)
-sudo ./capture
+
 
